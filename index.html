@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>마왕성 마물 도감</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&display=swap');
+:root{
+  --paper:#f2e8c8;--paper2:#e4d4a4;--paper3:#c8aa70;
+  --ink:#1a1008;--ink2:#3a2010;--fade:#7a5830;
+  --gold:#b88020;--gold2:#d8a840;--goldl:#f0d080;
+  --slime:#2a6898;--goblin:#4a7020;--vampire:#782030;
+  --undead:#5828a0;--dragon:#886010;--boss:#484040;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Noto Serif KR',serif;background:#0a0804;color:var(--ink)}
+.bg-blur{position:fixed;inset:0;z-index:0;background-size:cover;background-position:center;filter:blur(18px) brightness(.35) saturate(.6);transform:scale(1.1);transition:background-image .5s}
+#pageMain .bg-main{position:absolute;inset:0;z-index:0;background-size:cover;background-position:center;background-image:url('https://raw.githubusercontent.com/ori030/mon/refs/heads/main/%EB%8F%84%EA%B0%90%EB%B6%81.webp')}
+.app{position:fixed;inset:0;z-index:1;display:flex;flex-direction:column;overflow:hidden}
+/* 탑바 */
+.topbar{flex-shrink:0;background:rgba(10,8,4,.88);border-bottom:1px solid var(--gold);backdrop-filter:blur(8px);display:flex;align-items:center;height:48px;overflow-x:auto;scrollbar-width:none;box-shadow:0 2px 12px rgba(0,0,0,.6)}
+.topbar::-webkit-scrollbar{display:none}
+.tb-btn{flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5px 10px;cursor:pointer;background:none;border:none;color:var(--fade);font-family:'Noto Serif KR',serif;transition:all .15s;gap:2px;border-bottom:2px solid transparent;height:100%}
+.tb-btn:active{background:rgba(176,128,32,.1)}
+.tb-btn.active{color:var(--gold2);border-bottom-color:var(--gold)}
+.tb-icon{font-size:15px;line-height:1}
+.tb-label{font-size:8px;white-space:nowrap}
+.tb-sep{width:1px;height:24px;background:rgba(138,96,48,.3);flex-shrink:0;margin:0 2px}
+/* 페이지 */
+.pages{flex:1;position:relative;overflow:hidden}
+.page{position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden;transform:translateX(100%);opacity:0;transition:transform .28s ease,opacity .28s;pointer-events:none}
+.page.active{transform:translateX(0);opacity:1;pointer-events:auto}
+/* 메인 */
+#pageMain{align-items:center;justify-content:center;gap:18px;padding:24px}
+.main-deco{color:var(--gold2);font-size:11px;letter-spacing:8px}
+.main-title{font-size:22px;font-weight:700;color:var(--goldl);letter-spacing:4px;line-height:1.35;text-align:center;text-shadow:0 0 20px rgba(216,168,64,.5)}
+.main-sub{font-size:9px;color:var(--fade);letter-spacing:5px}
+.main-btn{background:rgba(176,128,32,.15);border:2px solid var(--gold2);color:var(--goldl);font-size:13px;font-weight:700;font-family:'Noto Serif KR',serif;padding:11px 28px;cursor:pointer;letter-spacing:3px;clip-path:polygon(0 6px,6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px));transition:all .2s;box-shadow:0 0 16px rgba(176,128,32,.2)}
+.main-btn:active{background:rgba(176,128,32,.3);transform:scale(.96)}
+.main-count{font-size:9px;color:var(--fade);letter-spacing:1px}
+/* 도감 */
+#pageDex{background:transparent}
+.dex-header{flex-shrink:0;background:rgba(10,8,4,.72);backdrop-filter:blur(6px);border-bottom:1px solid rgba(138,96,48,.4);padding:6px 10px}
+.tribe-tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.tribe-tabs::-webkit-scrollbar{display:none}
+.ttab{flex-shrink:0;padding:4px 10px;font-size:9px;background:rgba(255,255,255,.05);border:1px solid rgba(138,96,48,.3);color:var(--fade);cursor:pointer;font-family:'Noto Serif KR',serif;white-space:nowrap;transition:all .15s;clip-path:polygon(0 3px,3px 0,calc(100% - 3px) 0,100% 3px,100% calc(100% - 3px),calc(100% - 3px) 100%,3px 100%,0 calc(100% - 3px))}
+.ttab.active{background:rgba(176,128,32,.2);border-color:var(--gold);color:var(--gold2)}
+.dex-scroll{flex:1;overflow-y:auto;padding:8px;scrollbar-width:thin;scrollbar-color:rgba(138,96,48,.3) transparent}
+.dex-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px}
+.gcard{background:var(--paper2);border:2px solid var(--paper3);cursor:pointer;position:relative;overflow:hidden;clip-path:polygon(0 5px,5px 0,calc(100% - 5px) 0,100% 5px,100% calc(100% - 5px),calc(100% - 5px) 100%,5px 100%,0 calc(100% - 5px));transition:transform .12s;box-shadow:0 2px 6px rgba(0,0,0,.4)}
+.gcard:active{transform:scale(.92)}
+.gc-slime{border-color:var(--slime)}.gc-goblin{border-color:var(--goblin)}.gc-vampire{border-color:var(--vampire)}.gc-undead{border-color:var(--undead)}.gc-dragon{border-color:var(--dragon)}.gc-boss{border-color:var(--boss)}
+.gcard-img{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;padding:4px;background:rgba(255,255,255,.15)}
+.gcard-img img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
+.gcard-name{font-size:7px;color:var(--ink);font-weight:700;text-align:center;padding:2px 2px 3px;border-top:1px solid rgba(0,0,0,.1);background:rgba(255,255,255,.3);line-height:1.3}
+.gcard-stage{position:absolute;top:2px;right:2px;font-size:6px;padding:1px 3px;font-weight:700}
+.gs1{background:rgba(42,104,152,.3);color:#1a5888;border:1px solid var(--slime)}
+.gs2{background:rgba(88,40,160,.3);color:#3a1888;border:1px solid var(--undead)}
+.gs3{background:rgba(136,96,16,.3);color:#604808;border:1px solid var(--dragon)}
+/* 카드뷰 */
+#pageView{background:transparent}
+.view-header{flex-shrink:0;background:rgba(10,8,4,.72);backdrop-filter:blur(6px);border-bottom:1px solid rgba(138,96,48,.4);padding:6px 10px;display:flex;align-items:center;gap:8px}
+.view-back{background:none;border:1px solid rgba(138,96,48,.4);color:var(--fade);padding:3px 10px;font-size:10px;cursor:pointer;font-family:'Noto Serif KR',serif;clip-path:polygon(0 3px,3px 0,calc(100% - 3px) 0,100% 3px,100% calc(100% - 3px),calc(100% - 3px) 100%,3px 100%,0 calc(100% - 3px))}
+.view-name{font-size:13px;font-weight:700;color:var(--goldl)}
+.view-info{font-size:9px;color:var(--fade);margin-left:auto}
+.view-body{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.card-slider{flex:1;display:flex;overflow:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.card-slider::-webkit-scrollbar{display:none}
+.slide-card{flex-shrink:0;width:100%;scroll-snap-align:center;display:flex;flex-direction:column;align-items:center;padding:10px 14px;gap:8px;overflow-y:auto}
+/* 슬라이드 카드 본체 */
+.sc-wrap{width:100%;max-width:360px;border:2px solid;overflow:hidden;position:relative;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+.sc-slime{border-color:var(--slime);background:linear-gradient(160deg,#d8eef8,#b8d4ec)}
+.sc-goblin{border-color:var(--goblin);background:linear-gradient(160deg,#d8eec8,#bcd8a8)}
+.sc-vampire{border-color:var(--vampire);background:linear-gradient(160deg,#f4d8d8,#e4b8bc)}
+.sc-undead{border-color:var(--undead);background:linear-gradient(160deg,#ddd8f8,#c8b8f4)}
+.sc-dragon{border-color:var(--dragon);background:linear-gradient(160deg,#f4e8c0,#e8d49c)}
+.sc-boss{border-color:var(--boss);background:linear-gradient(160deg,#e8e4e0,#d4ccc8)}
+.sc-corner{position:absolute;width:10px;height:10px;border:2px solid}
+.sc-corner.tl{top:4px;left:4px;border-right:none;border-bottom:none}
+.sc-corner.tr{top:4px;right:4px;border-left:none;border-bottom:none}
+.sc-corner.bl{bottom:4px;left:4px;border-right:none;border-top:none}
+.sc-corner.br{bottom:4px;right:4px;border-left:none;border-top:none}
+.sc-slime .sc-corner{border-color:var(--slime)}.sc-goblin .sc-corner{border-color:var(--goblin)}.sc-vampire .sc-corner{border-color:var(--vampire)}.sc-undead .sc-corner{border-color:var(--undead)}.sc-dragon .sc-corner{border-color:var(--dragon)}.sc-boss .sc-corner{border-color:var(--boss)}
+.sc-banner{display:flex;align-items:center;justify-content:space-between;padding:7px 12px 5px;border-bottom:1px solid rgba(0,0,0,.12)}
+.tribe-pill{font-size:10px;font-weight:700;padding:2px 9px;clip-path:polygon(4px 0,calc(100% - 4px) 0,100% 4px,100% calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,0 calc(100% - 4px),0 4px)}
+.tp-slime{background:var(--slime);color:#fff}.tp-goblin{background:var(--goblin);color:#fff}.tp-vampire{background:var(--vampire);color:#fff}.tp-undead{background:var(--undead);color:#fff}.tp-dragon{background:var(--dragon);color:#fff}.tp-boss{background:var(--boss);color:#fff}
+.sb-stage{font-size:9px;padding:2px 7px;font-weight:700}
+.ss1{background:rgba(42,104,152,.2);color:var(--slime);border:1px solid var(--slime)}
+.ss2{background:rgba(88,40,160,.2);color:var(--undead);border:1px solid var(--undead)}
+.ss3{background:rgba(136,96,16,.2);color:var(--dragon);border:1px solid var(--dragon)}
+.sc-img-wrap{display:flex;justify-content:center;align-items:center;padding:10px 14px 6px;min-height:165px;position:relative;cursor:pointer}
+.sc-img-wrap img{max-height:150px;max-width:100%;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 3px 8px rgba(0,0,0,.2))}
+.sc-img-wrap::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:80px;height:18px;background:radial-gradient(ellipse,rgba(0,0,0,.1),transparent 70%);border-radius:50%}
+.sc-info{background:rgba(255,255,255,.5);border-top:1px solid rgba(0,0,0,.1);padding:6px 12px;display:grid;grid-template-columns:1fr 1fr;gap:3px 8px}
+.info-pair{display:flex;align-items:center;gap:5px}
+.info-k{font-size:8px;color:var(--fade)}
+.info-v{font-size:10px;color:var(--ink);font-weight:700}
+.role-tag{font-size:8px;padding:1px 5px;font-weight:700}
+.rt-딜{background:#ffeeee;color:#992222;border:1px solid #cc3333}.rt-탱{background:#eeeeff;color:#222299;border:1px solid #3333cc}.rt-힐{background:#eeffee;color:#227722;border:1px solid #33aa33}.rt-암살{background:#ffeeff;color:#772277;border:1px solid #aa33aa}.rt-마법{background:#fff3ee;color:#774400;border:1px solid #cc6600}.rt-지원{background:#eeffff;color:#227777;border:1px solid #33aaaa}.rt-군주{background:#fffaee;color:#775500;border:1px solid #aa7700}.rt-보좌관{background:#f4eeff;color:#5522aa;border:1px solid #7744cc}.rt-미정{background:#f0f0f0;color:#555;border:1px solid #999}
+.sc-desc{margin:5px 11px;border:1px solid rgba(0,0,0,.1);padding:6px 9px;background-image:radial-gradient(circle,rgba(0,0,0,.04) 1px,transparent 1px),linear-gradient(rgba(255,255,255,.5),rgba(255,255,255,.5));background-size:7px 7px,100%}
+.sc-desc-t{font-size:8px;color:rgba(0,0,0,.35);letter-spacing:2px;margin-bottom:3px;display:flex;align-items:center;gap:4px;justify-content:center}
+.sc-desc-t::before,.sc-desc-t::after{content:'';flex:1;height:1px;background:rgba(0,0,0,.1)}
+.sc-desc-text{font-size:10px;color:#2a1808;line-height:1.7}
+.sc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;padding:0 11px 5px}
+.stat-c{text-align:center}
+.stat-lbl{font-size:7px;color:var(--fade)}
+.stat-bar{height:3px;background:rgba(0,0,0,.08);margin:2px 0;overflow:hidden}
+.stat-f{height:100%}
+.sf-hp{background:#3a9a55}.sf-atk{background:#bb3333}.sf-def{background:#3366bb}
+.stat-num{font-size:9px;font-weight:700;color:var(--ink2)}
+.sc-ab{padding:0 11px 8px}
+.ab-t{font-size:8px;color:rgba(0,0,0,.35);letter-spacing:2px;margin-bottom:4px;display:flex;align-items:center;gap:4px;justify-content:center}
+.ab-t::before,.ab-t::after{content:'';flex:1;height:1px;background:rgba(0,0,0,.1)}
+.ab-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.ab-item{background:rgba(255,255,255,.5);border:1px solid rgba(0,0,0,.1);padding:5px 2px;text-align:center;cursor:pointer;clip-path:polygon(0 3px,3px 0,calc(100% - 3px) 0,100% 3px,100% calc(100% - 3px),calc(100% - 3px) 100%,3px 100%,0 calc(100% - 3px));transition:all .12s}
+.ab-item:active{transform:scale(.94);background:rgba(255,255,255,.8)}
+.ab-num{width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#fff;margin:0 auto 2px}
+.an-slime{background:var(--slime)}.an-goblin{background:var(--goblin)}.an-vampire{background:var(--vampire)}.an-undead{background:var(--undead)}.an-dragon{background:var(--dragon)}.an-boss{background:var(--boss)}
+.ab-name{font-size:7px;color:#333;line-height:1.3}
+.sc-evo{padding:0 11px 10px}
+.evo-chips{display:flex;gap:4px;flex-wrap:wrap}
+.evo-chip{background:rgba(255,255,255,.45);border:1px solid rgba(0,0,0,.1);padding:2px 7px;font-size:8px;color:#333;display:flex;align-items:center;gap:3px;clip-path:polygon(0 3px,3px 0,calc(100% - 3px) 0,100% 3px,100% calc(100% - 3px),calc(100% - 3px) 100%,3px 100%,0 calc(100% - 3px))}
+.evo-arr{color:var(--gold);font-weight:700}
+.talk-btn{width:100%;max-width:360px;background:rgba(10,8,4,.75);border:1px solid var(--gold);color:var(--gold2);font-size:11px;font-weight:700;font-family:'Noto Serif KR',serif;padding:9px;cursor:pointer;letter-spacing:2px;clip-path:polygon(0 5px,5px 0,calc(100% - 5px) 0,100% 5px,100% calc(100% - 5px),calc(100% - 5px) 100%,5px 100%,0 calc(100% - 5px));transition:all .15s;backdrop-filter:blur(4px)}
+.talk-btn:active{background:rgba(176,128,32,.2);transform:scale(.97)}
+.nav-dots-wrap{display:flex;justify-content:center;gap:5px;padding:6px 0 2px;flex-shrink:0}
+.nav-dot{width:5px;height:5px;border-radius:50%;background:rgba(176,128,32,.2);cursor:pointer;transition:all .15s}
+.nav-dot.active{background:var(--gold2);width:14px;border-radius:2px}
+/* 말풍선 */
+.bubble-wrap{position:fixed;inset:0;z-index:300;display:flex;align-items:flex-end;justify-content:center;padding:0 16px 70px;pointer-events:none}
+.bubble{background:rgba(10,8,4,.92);border:1px solid var(--gold);border-radius:8px 8px 8px 0;padding:12px 16px;font-size:12px;color:var(--paper);line-height:1.7;max-width:340px;backdrop-filter:blur(8px);transform:translateY(20px);opacity:0;transition:transform .3s,opacity .3s;pointer-events:auto;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+.bubble.show{transform:translateY(0);opacity:1}
+/* 이미지 확대 */
+.img-ov{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.img-ov.show{opacity:1;pointer-events:auto}
+.img-ov img{max-width:90vw;max-height:90vh;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 0 20px rgba(176,128,32,.3))}
+
+/* 음악 버튼 */
+.music-btn{position:fixed;top:8px;right:10px;z-index:999;background:rgba(10,8,4,.85);border:1px solid var(--gold);color:var(--gold2);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.music-btn:active{transform:scale(.92)}
+/* 좌우 화살표 버튼 (PC) */
+.nav-arrow{display:none;position:absolute;top:50%;transform:translateY(-50%);z-index:50;background:rgba(10,8,4,.75);border:1px solid var(--gold);color:var(--gold2);width:36px;height:60px;cursor:pointer;font-size:20px;backdrop-filter:blur(4px);transition:all .15s;align-items:center;justify-content:center}
+.nav-arrow:hover{background:rgba(176,128,32,.2)}
+.nav-arrow:disabled{opacity:.2;cursor:default}
+.nav-arrow.left{left:8px;border-radius:0 4px 4px 0}
+.nav-arrow.right{right:8px;border-radius:4px 0 0 4px}
+@media(min-width:640px){.nav-arrow{display:flex}}
+/* 툴팁 */
+.tooltip{display:none;position:fixed;background:rgba(10,6,2,.97);border:1px solid var(--gold);padding:7px 11px;font-size:10px;color:var(--paper);line-height:1.6;max-width:220px;z-index:500;pointer-events:none;clip-path:polygon(0 4px,4px 0,calc(100% - 4px) 0,100% 4px,100% calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,0 calc(100% - 4px))}
+.tooltip.show{display:block}
+</style>
+</head>
+<body>
+<div class="bg-blur" id="bg"></div>
+<div class="app">
+<div class="topbar">
+  <button class="tb-btn active" id="tb0" onclick="nav('main',0)"><span class="tb-icon">🏰</span><span class="tb-label">메인</span></button>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" id="tb1" onclick="nav('dex',1)"><span class="tb-icon">📖</span><span class="tb-label">도감</span></button>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" id="tb2" onclick="nav('view',2)"><span class="tb-icon">🃏</span><span class="tb-label">카드뷰</span></button>
+  <div class="tb-sep"></div>
+  <button class="tb-btn" id="tb3" onclick="fv('slime',3)"><span class="tb-icon">🟢</span><span class="tb-label">슬라임</span></button>
+  <button class="tb-btn" id="tb4" onclick="fv('goblin',4)"><span class="tb-icon">⚔️</span><span class="tb-label">고블린</span></button>
+  <button class="tb-btn" id="tb5" onclick="fv('vampire',5)"><span class="tb-icon">🧛</span><span class="tb-label">흡혈귀</span></button>
+  <button class="tb-btn" id="tb6" onclick="fv('undead',6)"><span class="tb-icon">💀</span><span class="tb-label">언데드</span></button>
+  <button class="tb-btn" id="tb7" onclick="fv('dragon',7)"><span class="tb-icon">🐉</span><span class="tb-label">드래곤</span></button>
+  <button class="tb-btn" id="tb8" onclick="fv('boss',8)"><span class="tb-icon">👑</span><span class="tb-label">보좌관</span></button>
+</div>
+<div class="pages">
+  <div class="page active" id="pageMain">
+    <div class="bg-main"></div>
+    <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;height:100%">
+      <div style="text-align:center">
+        <div class="main-sub" style="margin-top:60px">DEMON CASTLE MONSTER COMPENDIUM</div>
+      </div>
+      <button class="main-btn" onclick="nav('view',2)" style="margin-top:auto;font-size:15px;padding:14px 36px;background:rgba(10,8,4,.9);border:2px solid var(--gold2);box-shadow:0 0 20px rgba(176,128,32,.4),inset 0 0 12px rgba(176,128,32,.1)">📖 도감 펼치기</button>
+      <div class="main-count" id="mainCount" style="margin-bottom:auto;color:var(--gold2);text-shadow:0 0 8px rgba(176,128,32,.5)"></div>
+    </div>
+  </div>
+  <div class="page" id="pageDex">
+    <div class="dex-header">
+      <div class="tribe-tabs">
+        <div class="ttab active" onclick="st('all',this)">전체</div>
+        <div class="ttab" onclick="st('slime',this)">🟢슬라임</div>
+        <div class="ttab" onclick="st('goblin',this)">⚔고블린</div>
+        <div class="ttab" onclick="st('vampire',this)">🧛흡혈귀</div>
+        <div class="ttab" onclick="st('undead',this)">💀언데드</div>
+        <div class="ttab" onclick="st('dragon',this)">🐉드래곤</div>
+        <div class="ttab" onclick="st('boss',this)">👑보좌관</div>
+      </div>
+    </div>
+    <div class="dex-scroll"><div class="dex-grid" id="dexGrid"></div></div>
+  </div>
+  <div class="page" id="pageView">
+    <div class="view-header">
+      <button class="view-back" onclick="nav('main',0)">← 뒤로</button>
+      <span class="view-name" id="viewName"></span>
+      <span class="view-info" id="viewInfo"></span>
+    </div>
+    <div class="view-body" style="position:relative">
+      <button class="nav-arrow left" id="arrowL" onclick="arrowNav(-1)">‹</button>
+      <button class="nav-arrow right" id="arrowR" onclick="arrowNav(1)">›</button>
+      <div class="card-slider" id="slider"></div>
+      <div class="nav-dots-wrap" id="dots"></div>
+    </div>
+  </div>
+</div>
+</div>
+<div class="bubble-wrap"><div class="bubble" id="bubble"></div></div>
+<div class="img-ov" id="imgOv" onclick="closeOv()"><img id="ovImg" src="" alt=""/></div>
+<div class="tooltip" id="tip"></div>
+<script>
+const BASE='https://raw.githubusercontent.com/ori030/mon/refs/heads/main/';
+const TN={slime:'슬라임 종족',goblin:'고블린 종족',vampire:'흡혈귀 종족',undead:'언데드 종족',dragon:'드래곤 종족',boss:'서큐버스 종족'};
+const M=[
+  {id:'001',t:'slime',s:1,n:'하급 슬라임',r:'미정',img:'1-1단계_하급슬라임',hp:50,atk:10,def:5,ab:[{n:'점액 분열',d:'점액을 튀겨 적에게 피해를 준다'},{n:'말랑 방어',d:'유연한 몸으로 피해를 흡수한다'},{n:'재생',d:'시간이 지날수록 체력을 회복한다'}],desc:'가장 흔하게 발견되는 마물. 점액질 몸으로 피해를 흡수하며 천천히 재생한다.',evo:['슬라임 기사','방패 슬라임','치유 슬라임'],v:['찰랑찰랑...','뿅!','(마왕님 곁에 있고 싶은 것 같다)','...뿅?']},
+  {id:'002',t:'slime',s:2,n:'슬라임 기사',r:'딜',img:'2-2단계_슬라임기사',hp:120,atk:45,def:15,ab:[{n:'기사의 일격',d:'점액을 응집해 만든 강철 검으로 강하게 내리친다'},{n:'돌격',d:'검을 앞세워 적에게 빠르게 돌진한다'},{n:'점액 창',d:'몸의 일부를 날카롭게 뽑아내 적을 꿰뚫는다'}],desc:'점액질 몸을 응집시켜 강철 검을 만들어 싸우는 슬라임 기사.',evo:['슬라임 군주'],v:['"나 이제 쌔졌어!"','"마왕님 내가 다 혼내줄게!"','"덤벼! 기분 최고야!"','"더 강해질 수 있어!"']},
+  {id:'003',t:'slime',s:2,n:'방패 슬라임',r:'탱',img:'3-2단계_슬라임탱커',hp:225,atk:18,def:22,ab:[{n:'점액 방패',d:'몸의 일부를 굳혀 방패를 만들어 아군 앞을 막아선다'},{n:'흡수',d:'받은 피해 일부를 체력으로 전환한다'},{n:'도발',d:'적의 시선을 자신에게 집중시킨다'}],desc:'몸의 일부를 굳혀 방패로 만들어 아군을 지키는 슬라임.',evo:['슬라임 군주'],v:['"내가 다 막을게!"','"마왕님 뒤에 있어."','"안 아파."','"나한테 덤벼!"']},
+  {id:'004',t:'slime',s:2,n:'치유 슬라임',r:'힐',img:'4-2단계_슬라임힐러',hp:180,atk:15,def:15,ab:[{n:'치유의 지팡이',d:'지팡이로 아군을 두드려 체력을 회복시킨다'},{n:'재생 촉진',d:'아군의 자연 회복 속도를 높여준다'},{n:'응급 처치',d:'빈사 상태의 아군을 즉시 소량 회복시킨다'}],desc:'점액으로 만든 지팡이를 휘두르며 아군을 치료하는 슬라임.',evo:['슬라임 군주'],v:['"다쳤어? 내가 고쳐줄게."','"가만히 있어."','"마왕님도 다쳤어요?"','"치료 완료!"']},
+  {id:'005',t:'slime',s:3,n:'슬라임 군주',r:'군주',img:'5-3단계_슬라임주군',hp:400,atk:80,def:40,ab:[{n:'군주의 소환',d:'하급 슬라임을 전장에 소환해 자신을 따르게 한다'},{n:'점액 지배',d:'전장의 모든 점액을 조종해 적의 발을 묶거나 아군을 강화한다'},{n:'분열의 왕',d:'자신의 몸을 분열시켜 여러 슬라임으로 나뉘어 전장을 제압한다'}],desc:'슬라임 종족의 정점. 눈을 감은 채로도 모든 것을 감지한다.',evo:[],v:['"...위험해."','"잘했어."','"물러서."','"...여기 있을게."']},
+  {id:'006',t:'goblin',s:1,n:'하급 고블린',r:'미정',img:'6-1단계_고블린',hp:50,atk:10,def:5,ab:[{n:'몰려들기',d:'무리지어 적에게 달려들어 혼란을 준다'},{n:'돌팔매',d:'주변의 돌을 집어 적에게 던진다'},{n:'함정 설치',d:'주변 재료로 간단한 함정을 만들어 적을 걸리게 한다'}],desc:'작고 약하지만 수가 많아 무시할 수 없는 존재.',evo:['전사 고블린','암살자 고블린','고블린 샤먼'],v:['"배고파!"','"아 맞다 싸워야지!"','"근데 진짜 배고파..."','"마왕님 밥은요?!"']},
+  {id:'007',t:'goblin',s:2,n:'전사 고블린',r:'딜',img:'7-2단계_전사고블린',hp:120,atk:45,def:15,ab:[{n:'광전사의 일격',d:'도끼 두 자루로 적을 연속으로 내리친다'},{n:'분노',d:'체력이 낮을수록 공격력이 올라간다'},{n:'돌진',d:'적을 향해 무작정 달려들어 충격을 준다'}],desc:'고블린에서 진화한 전투 특화 고블린.',evo:['고블린 퀸'],v:['"우오오오!!"','"덤벼라!!"','"신나!"','"기분 최고!!"']},
+  {id:'008',t:'goblin',s:2,n:'암살자 고블린',r:'암살',img:'8-2단계_암살자고블린',hp:90,atk:54,def:10,ab:[{n:'그림자 베기',d:'적의 사각에서 쌍검으로 급소를 노린다'},{n:'연속 베기',d:'빠르게 연속으로 적을 베어 출혈을 일으킨다'},{n:'망토 은신',d:'붉은 망토로 몸을 숨겨 적의 시야에서 벗어난다'}],desc:'조용하고 은밀하게 움직이는 암살자. 발소리가 생각보다 크다.',evo:['고블린 퀸'],v:['"...완벽히 숨었다."','"임무 완료."','"...보이지 않지?"','"조용히 해."']},
+  {id:'009',t:'goblin',s:2,n:'고블린 샤먼',r:'마법',img:'https://raw.githubusercontent.com/ori030/mon/refs/heads/main/9-2%EB%8B%A8%EA%B3%84_%EC%83%A4%EB%A8%BC%EA%B3%A0%EB%B8%94%EB%A6%B0.webp',hp:150,atk:42,def:15,ab:[{n:'화염구',d:'강력한 불덩이를 적에게 날린다'},{n:'불꽃 폭발',d:'주변 적 전체에게 광역 화염 피해를 준다'},{n:'화상',d:'적에게 지속적인 불꽃 피해를 입히는 화상을 건다'}],desc:'냉철한 두뇌로 전투를 분석하지만 불꽃을 보면 모든 계산이 무너진다.',evo:['고블린 퀸'],v:['"계산상 승률은—"','"불이다!!"','"...집중하자."','"이론상으론 이긴다."']},
+  {id:'010',t:'goblin',s:3,n:'고블린 퀸',r:'군주',img:'10-3단계_고블린퀸',hp:400,atk:80,def:40,ab:[{n:'여왕의 호령',d:'고블린 부하들의 전체 공격력과 이동 속도를 높인다'},{n:'무리 소환',d:'하급 고블린을 전장에 불러내 적을 수적으로 압도한다'},{n:'분노의 일격',d:'부하가 쓰러질수록 공격력이 폭발적으로 상승한다'}],desc:'고블린 종족의 정점. 카리스마 넘치는 한 마디로 고블린 무리를 움직인다.',evo:[],v:['"명령만 내려주세요."','"부하들이 다 처리합니다."','"마왕님, 믿으십시오."','"전장은 제게 맡겨두세요."']},
+  {id:'011',t:'undead',s:1,n:'꼬마 해골',r:'미정',img:'11-1단계_하급언데드',hp:50,atk:10,def:5,ab:[{n:'뼈 던지기',d:'빠진 뼈를 집어 적에게 던진다'},{n:'뼈 채찍',d:'팔뼈를 길게 늘어뜨려 적을 후려친다'},{n:'뼈 흩뿌리기',d:'여러 뼈를 사방에 흩뿌려 적에게 혼란을 준다'}],desc:'뼈가 자꾸 빠지는 작은 해골 마물.',evo:['좀비','강시','리치'],v:['(뼈가 또 빠진 것 같다)','(뭔가 불만인 것 같다)','덜컹...','(빠진 뼈를 줍고 있다)']},
+  {id:'012',t:'undead',s:2,n:'좀비',r:'탱',img:'12-2단계_좀비',hp:225,atk:18,def:22,ab:[{n:'부패의 손',d:'독성 액체로 오염된 손으로 적을 움켜쥐어 이동 속도를 낮춘다'},{n:'불사',d:'치명적인 공격을 받아도 한 번은 버텨낸다'},{n:'독기 확산',d:'몸에서 독성 가스를 내뿜어 주변 적의 공격력을 낮춘다'}],desc:'느리지만 절대 쓰러지지 않는 끈질긴 마물.',evo:['미라 여왕'],v:['...','(그냥 걸어온다)','...우...','(기분이 어떤지 모르겠다)']},
+  {id:'013',t:'undead',s:2,n:'강시',r:'암살',img:'13-2단계_강시',hp:90,atk:54,def:10,ab:[{n:'강시의 일격',d:'양팔을 뻗어 적의 급소를 노려 능력치를 깎는다'},{n:'도약',d:'높이 뛰어올라 적에게 강하게 내리꽂힌다'},{n:'한기',d:'몸에서 차가운 기운을 내뿜어 적의 이동 속도를 얼려버린다'}],desc:'이마에 부적을 붙이고 깡충깡충 뛰어다니는 언데드.',evo:['미라 여왕'],v:['"간다."','"됐다."','"...다음."','"명령대로."']},
+  {id:'014',t:'undead',s:2,n:'리치',r:'마법',img:'14-2단계_리치',hp:150,atk:42,def:15,ab:[{n:'죽음의 마법진',d:'광역 저주 마법진을 펼쳐 범위 내 적 전체의 능력치를 낮춘다'},{n:'영혼 폭발',d:'모아둔 영혼 에너지를 한꺼번에 폭발시켜 강력한 광역 피해를 준다'},{n:'저주',d:'특정 적에게 저주를 걸어 받는 피해량을 증가시킨다'}],desc:'죽음의 마법에 완전히 미쳐버린 해골 마법사.',evo:['미라 여왕'],v:['"실험해볼까~?"','"아군이든 적이든!"','"재밌어지겠는데?"','"좀 더 해보자~!"']},
+  {id:'015',t:'undead',s:3,n:'미라 여왕',r:'군주',img:'15-3단계_미라',hp:450,atk:85,def:45,ab:[{n:'고대의 저주',d:'고대 왕국의 힘으로 적 전체에 강력한 저주를 내려 모든 능력치를 대폭 낮춘다'},{n:'언데드 군주',d:'아군 언데드 전체의 능력치를 강화하고 쓰러진 언데드를 한 번 부활시킨다'},{n:'왕의 위압',d:'압도적인 기운을 내뿜어 적 전체의 공격 의지를 꺾어버린다'}],desc:'엄청난 힘을 가졌지만 마왕 앞에서 유독 말을 못한다.',evo:[],v:['"...으, 음."','(귀끝이 살짝 빨개진다)','...감사합니다','(시선을 피하고 있다)']},
+  {id:'016',t:'dragon',s:1,n:'해츨링',r:'미정',img:'16-1단계_해츨링',hp:60,atk:12,def:8,ab:[{n:'아기 불꽃',d:'작은 입에서 불꽃을 내뿜는다'},{n:'껍데기 박치기',d:'머리의 알 껍데기로 적에게 돌진해 충격을 준다'},{n:'앙칼진 발톱',d:'작지만 날카로운 발톱으로 적을 할퀸다'}],desc:'알에서 막 깨어난 아기 드래곤.',evo:['아이스 드래곤','흑룡','지룡'],v:['"나는 드래곤이다!"','(껍데기가 또 흘러내림)','..."드...래...곤..."','"무섭지?!"']},
+  {id:'017',t:'dragon',s:2,n:'아이스 드래곤',r:'딜',img:'17-2단계_아이스드래곤',hp:130,atk:45,def:18,ab:[{n:'냉기 브레스',d:'강력한 얼음 숨결을 내뿜어 적을 얼려버린다'},{n:'빙결',d:'적의 몸을 얼음으로 감싸 일정 시간 행동 불능 상태로 만든다'},{n:'서리 발톱',d:'냉기를 담은 발톱으로 적을 베어 이동 속도를 낮춘다'}],desc:'차갑고 도도하며 감정 표현이 서툴다.',evo:['용의 군주'],v:['"...나쁘지 않아."','(시선을 피한다)','...뭘 보는 거야','(귀가 약간 빨개진 것 같다)']},
+  {id:'018',t:'dragon',s:2,n:'흑룡',r:'탱',img:'18-2단계_흑룡',hp:240,atk:20,def:25,ab:[{n:'흑룡의 포효',d:'압도적인 포효로 적 전체의 공격 의지를 꺾어 공격력을 낮춘다'},{n:'강철 비늘',d:'단단한 검은 비늘로 피해를 대폭 감소시킨다'},{n:'압도',d:'거대한 몸으로 적을 짓눌러 행동을 봉쇄한다'}],desc:'4족보행 검은 드래곤. 포효 하나로 적의 기를 꺾어버린다.',evo:['용의 군주'],v:['RRRR.','(경고하는 것 같다)','...Rr.','(꼬리를 살짝 흔들고 있다)']},
+  {id:'019',t:'dragon',s:2,n:'지룡',r:'지원',img:'19-2단계_지룡',hp:180,atk:20,def:18,ab:[{n:'대지의 가호',d:'대지의 힘을 아군에게 불어넣어 공격력과 방어력을 높인다'},{n:'용기의 포효',d:'아군의 사기를 끌어올려 전투 의지를 강화한다'},{n:'예지',d:'적의 다음 행동을 예측해 아군이 선제적으로 대응할 수 있게 한다'}],desc:'작은 체구지만 누구보다 현명한 전략가다.',evo:['용의 군주'],v:['"지금은 기다릴 때입니다."','"승산이 있습니다."','"예측대로입니다."','"마왕님의 판단이 옳습니다."']},
+  {id:'020',t:'dragon',s:3,n:'용의 군주',r:'군주',img:'20-3단계_용의군주',hp:500,atk:90,def:50,ab:[{n:'용왕의 위압',d:'압도적인 기운을 내뿜어 적 전체의 모든 능력치를 대폭 낮춘다'},{n:'황금 용의 가호',d:'아군 전체에 강력한 황금빛 보호막을 씌워 일정량의 피해를 무효화한다'},{n:'고룡의 포효',d:'전장 전체에 울려퍼지는 포효로 적을 공황에 빠뜨리고 아군 능력치를 높인다'}],desc:'수천 년을 살아온 드래곤족의 정점.',evo:[],v:['"오늘도 무리했네."','"좀 쉬지 그래."','"...수고했어."','"기대했던 것보다 잘했군."']},
+  {id:'021',t:'vampire',s:1,n:'붉은 박쥐',r:'미정',img:'21-1단계_하급흡혈귀',hp:50,atk:10,def:5,ab:[{n:'날개 할퀴기',d:'날카로운 날개로 적을 할퀴어 피해를 준다'},{n:'초음파',d:'귀청이 찢어지는 소리로 적의 집중력을 흐트러뜨린다'},{n:'흡혈',d:'적에게 달려들어 피를 빨아 자신의 체력을 회복한다'}],desc:'핏빛 날개를 가진 작은 박쥐 마물.',evo:['파이터 흡혈귀','피마법사','마녀'],v:['끼끼끼!','(피 냄새가 나서 신난 것 같다)','끼!','(마왕님 주위를 빙빙 돈다)']},
+  {id:'022',t:'vampire',s:2,n:'파이터 흡혈귀',r:'딜',img:'22-2단계_파이터 흡혈귀',hp:120,atk:45,def:15,ab:[{n:'뱀파이어 블로우',d:'흡혈 에너지를 담은 주먹으로 적을 강하게 가격해 체력을 흡수한다'},{n:'피의 각성',d:'피 냄새를 맡을수록 공격력이 점점 상승한다'},{n:'흡혈 연격',d:'빠르게 연속으로 가격하며 매번 체력을 흡수한다'}],desc:'주먹 하나로 싸우는 근접 전투 특화 뱀파이어.',evo:['뱀파이어 로드'],v:['"때리면 돼."','"그게 다야."','"...뭘 봐."','"기분? 나쁘지 않아."']},
+  {id:'023',t:'vampire',s:2,n:'피마법사',r:'마법',img:'23-2단계_피마법사',hp:150,atk:42,def:15,ab:[{n:'혈액 마법진',d:'적의 피로 마법진을 그려 강력한 광역 피해를 준다'},{n:'피의 창',d:'응집된 혈액을 날카롭게 뽑아내 적을 꿰뚫는다'},{n:'저주의 피',d:'적에게 오염된 피를 주입해 지속적으로 체력을 깎는다'}],desc:'피를 마법 재료로 사용하는 냉정한 마법사.',evo:['뱀파이어 로드'],v:['"피 한 방울이면 충분해요."','"계산대로."','"감정은 필요 없죠."','"효율적이에요."']},
+  {id:'024',t:'vampire',s:2,n:'마녀',r:'힐',img:'24-2단계_마녀',hp:180,atk:15,def:15,ab:[{n:'흡혈 치료',d:'적의 피를 빨아 아군에게 수혈해 체력을 회복시킨다'},{n:'피의 방패',d:'흡수한 피로 아군에게 보호막을 형성한다'},{n:'긴급 수혈',d:'빈사 상태의 아군에게 자신의 피를 나눠 즉시 회복시킨다'}],desc:'피를 흡수해 아군을 치료하는 뱀파이어 힐러.',evo:['뱀파이어 로드'],v:['"자, 잠깐만 물게요."','"금방 나아요."','"다들 건강해야죠~"','"마왕님도 다치시면 안 돼요."']},
+  {id:'025',t:'vampire',s:3,n:'뱀파이어 로드',r:'군주',img:'25-3단계_뱀파이어로드',hp:400,atk:80,def:40,ab:[{n:'피의 지배',d:'전장의 피를 한곳에 모아 강력한 혈액 폭발을 일으킨다'},{n:'암흑 강림',d:'전장을 어둠으로 뒤덮어 적 전체의 시야를 차단하고 공격력을 낮춘다'},{n:'각성',d:'마왕이 위기에 처할 때만 발동. 모든 능력치가 폭발적으로 상승한다'}],desc:'수백 년을 살아온 뱀파이어족의 정점.',evo:[],v:['"...귀찮군."','"뭘 원하는 거야."','"...나쁘지 않군."','"...마음대로 해."']},
+  {id:'B01',t:'boss',s:1,n:'하급 보좌관',r:'보좌관',img:'26-1단계_하급보좌관',hp:0,atk:0,def:0,ab:[{n:'보고',d:'간단한 이벤트를 까악 소리와 행동으로 보고한다'},{n:'경고',d:'위험을 감지하면 날개를 파닥이며 울음소리로 경고한다'},{n:'동행',d:'항상 마왕의 어깨 위에 상주하며 절대 떠나지 않는다'}],desc:'마왕성에 처음부터 함께한 보좌관.',evo:['서큐버스 보좌관'],v:['까악!','(마왕님 어깨에 앉았다)','까~악!','(뭔가 기쁜 것 같다)']},
+  {id:'B02',t:'boss',s:2,n:'서큐버스 보좌관',r:'보좌관',img:'27-2단계_서큐버스보좌관',hp:0,atk:0,def:0,ab:[{n:'전략 조언',d:'상황을 분석하고 최적의 전략을 조언해준다'},{n:'동료 관리',d:'동료들의 상태를 파악하고 마왕에게 보고한다'},{n:'긴급 경고',d:'위험 상황을 감지해 즉각 마왕에게 알린다'}],desc:'마왕성이 성장하며 함께 각성한 보좌관.',evo:['S급 서큐버스'],v:['"마왕님 무리하시면 안 됩니다!"','"제가 다 준비해뒀어요."','"...걱정되잖아요."','"잔소리 아니거든요!"']},
+  {id:'B03',t:'boss',s:3,n:'S급 서큐버스',r:'보좌관',img:'28-3단계_서큐버스보좌관',hp:0,atk:0,def:0,ab:[{n:'완전 각성',d:'서큐버스 본래의 능력이 완전히 해방된다'},{n:'마왕 보호',d:'마왕이 위기에 처할 때 1회 개입해 사망을 막는다'},{n:'전략 지휘',d:'냉철한 판단으로 전투 전체를 지휘한다'}],desc:'마왕성이 S급에 도달하며 완전히 각성한 보좌관.',evo:[],v:['"후후, 이제 좀 쓸만해졌나요?"','"마왕님이 좋은 게 아니라 마왕성이 좋은 거예요."','"...부정하는 건 아니에요."','"이 정도는 해드려야죠."']},
+];
+function iu(n){return n.startsWith('http')?n:BASE+encodeURIComponent(n+'.webp')}
+let vl=[...M],vi=0,dl=[...M];
+function updateBg(m){/* 배경 고정: 도감북.webp */}
+function resetBg(){document.getElementById('bg').style.backgroundImage=`url('${DOK_URL}')`}
+function nav(p,i){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page'+p.charAt(0).toUpperCase()+p.slice(1)).classList.add('active');
+  document.querySelectorAll('.tb-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tb'+i).classList.add('active');
+  if(p==='dex')rdex();
+document.getElementById('bg').style.backgroundImage="url('https://raw.githubusercontent.com/ori030/mon/refs/heads/main/%EB%8F%84%EA%B0%90%EB%B6%81.webp')";
+  if(p==='view')rv();
+}
+function fv(t,i){vl=t==='all'?[...M]:M.filter(m=>m.t===t);vi=0;nav('view',i)}
+function st(t,el){dl=t==='all'?[...M]:M.filter(m=>m.t===t);document.querySelectorAll('.ttab').forEach(b=>b.classList.remove('active'));el.classList.add('active');rdex()}
+function rdex(){document.getElementById('dexGrid').innerHTML=dl.map(m=>`<div class="gcard gc-${m.t}" onclick="ofd('${m.id}')"><span class="gcard-stage gs${m.s}">${m.s}단계</span><div class="gcard-img"><img src="${iu(m.img)}" loading="lazy"/></div><div class="gcard-name">${m.n}</div></div>`).join('')}
+function ofd(id){const i=M.findIndex(m=>m.id===id);vl=[...M];vi=i;nav('view',2)}
+function rv(){
+  const s=document.getElementById('slider');
+  s.innerHTML=vl.map(m=>chtml(m)).join('');
+  bdots();scrl(vi,false);uh();updateBg(vl[vi]);
+  let sx=0;
+  s.ontouchstart=e=>{sx=e.touches[0].clientX};
+  s.ontouchend=e=>{const d=e.changedTouches[0].clientX-sx;if(Math.abs(d)>40){if(d<0&&vi<vl.length-1){vi++;scrl(vi,true)}else if(d>0&&vi>0){vi--;scrl(vi,true)}}};
+  s.onscroll=()=>{const w=s.offsetWidth;const i=Math.round(s.scrollLeft/w);if(i!==vi&&i>=0&&i<vl.length){vi=i;ud();uh();updateBg(vl[vi])}};
+}
+function chtml(m){
+  const nc=m.hp===0;
+  const st=nc?'':
+  `<div class="sc-stats">
+    <div class="stat-c"><div class="stat-lbl">HP</div><div class="stat-bar"><div class="stat-f sf-hp" style="width:${Math.min(100,m.hp/5)}%"></div></div><div class="stat-num">${m.hp}</div></div>
+    <div class="stat-c"><div class="stat-lbl">ATK</div><div class="stat-bar"><div class="stat-f sf-atk" style="width:${Math.min(100,m.atk/0.9)}%"></div></div><div class="stat-num">${m.atk}</div></div>
+    <div class="stat-c"><div class="stat-lbl">DEF</div><div class="stat-bar"><div class="stat-f sf-def" style="width:${Math.min(100,m.def/0.5)}%"></div></div><div class="stat-num">${m.def}</div></div>
+  </div>`;
+  const ev=m.evo.length?`<div class="sc-evo"><div class="ab-t" style="margin-bottom:4px">진화 가능</div><div class="evo-chips">${m.evo.map(e=>`<div class="evo-chip"><span class="evo-arr">→</span>${e}</div>`).join('')}</div></div>`:'';
+  return`<div class="slide-card"><div class="sc-wrap sc-${m.t}">
+    <div class="sc-corner tl"></div><div class="sc-corner tr"></div><div class="sc-corner bl"></div><div class="sc-corner br"></div>
+    <div class="sc-banner"><span class="tribe-pill tp-${m.t}">${TN[m.t]}</span><span class="sb-stage ss${m.s}">${m.s}단계</span></div>
+    <div class="sc-img-wrap" onclick="openOv('${iu(m.img)}')"><img src="${iu(m.img)}" loading="lazy"/></div>
+    <div class="sc-info">
+      <div class="info-pair"><span class="info-k">종족</span><span class="info-v">${m.n}</span></div>
+      <div class="info-pair"><span class="info-k">역할</span><span class="info-v"><span class="role-tag rt-${m.r}">${m.r}</span></span></div>
+    </div>
+    <div class="sc-desc"><div class="sc-desc-t">특징</div><div class="sc-desc-text">${m.desc}</div></div>
+    ${st}
+    <div class="sc-ab"><div class="ab-t">주요 능력</div>
+      <div class="ab-grid">${m.ab.map((a,j)=>`<div class="ab-item" onclick="showTip(event,'${a.d.replace(/'/g,"\\'")}')"><div class="ab-num an-${m.t}">${j+1}</div><div class="ab-name">${a.n}</div></div>`).join('')}</div>
+    </div>
+    ${ev}
+  </div>
+  <button class="talk-btn" onclick="talk('${m.id}')">💬 말 걸기</button></div>`;
+}
+function scrl(i,sm){const s=document.getElementById('slider');s.scrollTo({left:i*s.offsetWidth,behavior:sm?'smooth':'auto'});ud();uh();const al=document.getElementById('arrowL');const ar=document.getElementById('arrowR');if(al)al.disabled=i===0;if(ar)ar.disabled=i===vl.length-1;}
+function bdots(){const n=Math.min(vl.length,15);document.getElementById('dots').innerHTML=Array.from({length:n},(_,i)=>`<div class="nav-dot${i===0?' active':''}" onclick="goTo(${i})"></div>`).join('')}
+function goTo(i){vi=i;scrl(i,true);updateBg(vl[i])}
+function ud(){document.querySelectorAll('.nav-dot').forEach((d,i)=>d.classList.toggle('active',i===vi))}
+function uh(){const m=vl[vi];if(!m)return;document.getElementById('viewName').textContent=m.n;document.getElementById('viewInfo').textContent=`${vi+1} / ${vl.length}`}
+function talk(id){const m=M.find(x=>x.id===id);if(!m)return;const b=document.getElementById('bubble');b.textContent=m.v[Math.floor(Math.random()*m.v.length)];b.classList.remove('show');requestAnimationFrame(()=>requestAnimationFrame(()=>b.classList.add('show')));clearTimeout(talk._t);talk._t=setTimeout(()=>b.classList.remove('show'),3000)}
+function openOv(u){document.getElementById('ovImg').src=u;document.getElementById('imgOv').classList.add('show')}
+function closeOv(){document.getElementById('imgOv').classList.remove('show')}
+let tt;
+function showTip(e,t){const el=document.getElementById('tip');el.textContent=t;el.classList.add('show');const r=e.target.getBoundingClientRect();let top=r.top-65;if(top<8)top=r.bottom+6;el.style.top=top+'px';el.style.left=Math.min(window.innerWidth-230,Math.max(8,r.left))+'px';clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('show'),2500)}
+document.addEventListener('click',e=>{if(!e.target.closest('.ab-item'))document.getElementById('tip').classList.remove('show')});
+
+// ── 음악 ──
+const bgm=document.getElementById('bgm');
+bgm.volume=0.5;
+let playing=false;
+function toggleMusic(){
+  const btn=document.getElementById('musicBtn');
+  if(playing){
+    bgm.pause();btn.textContent='🔇';btn.title='음악 꺼짐';playing=false;
+  } else {
+    bgm.play().then(()=>{
+      btn.textContent='🎵';btn.title='음악 켜짐';playing=true;
+    }).catch(e=>{
+      btn.textContent='❌';btn.title='재생 불가 (Pages에서 접속하세요)';
+      setTimeout(()=>{btn.textContent='🔇'},2000);
+    });
+  }
+}
+// ── 화살표 네비 ──
+function arrowNav(d){
+  if(d<0&&vi>0){vi--;scrl(vi,true);updateBg(vl[vi])}
+  else if(d>0&&vi<vl.length-1){vi++;scrl(vi,true);updateBg(vl[vi])}
+  document.getElementById('arrowL').disabled=vi===0;
+  document.getElementById('arrowR').disabled=vi===vl.length-1;
+}
+document.getElementById('mainCount').textContent=`총 ${M.length}종의 마물이 기록되어 있습니다`;
+rdex();
+document.getElementById('bg').style.backgroundImage="url('https://raw.githubusercontent.com/ori030/mon/refs/heads/main/%EB%8F%84%EA%B0%90%EB%B6%81.webp')";
+</script>
+
+<audio id="bgm" loop>
+  <source src="https://raw.githubusercontent.com/ori030/mon/refs/heads/main/The%20Demon%27s%20Lullaby.mp3" type="audio/mpeg">
+</audio>
+<button class="music-btn" id="musicBtn" onclick="toggleMusic()" title="음악 켜기/끄기">🎵</button>
+</body>
+</html>
